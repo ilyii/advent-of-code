@@ -13,6 +13,11 @@ This repository contains my solutions to the Advent of Code 2023 puzzles.
 *You've been doing this long enough to know that to restore snow operations, you need to check all fifty stars by December 25th.*
 *Collect stars by solving puzzles. [...]"* - ([Advent of Code](https://adventofcode.com/2023/day/1))
 
+## Preview
+#### Day 8: Graph Visualization
+<img src="assets/day8_01.png" alt="drawing" width="300"/>
+
+
 ## 🦌 Links
 <div>
     <a href="https://www.adventofcode.com"><img src="https://img.shields.io/badge/Advent%20Of%20Code-8A2BE2?link=https%3A%2F%2Fadventofcode.com%2F" alt="Advent Of Code"></a>
