@@ -5,7 +5,7 @@
 ![Static Badge](https://img.shields.io/badge/in%20repair-orange?label=Snow%20Production%20Machine)
 
 Ho ho ho! 🎅🏻 
-This repository contains my solutions to the Advent of Code 2023 puzzles.
+This folder contains my solutions to the Advent of Code 2023 puzzles.
 
 ## ☃️ Story
 
@@ -13,10 +13,10 @@ This repository contains my solutions to the Advent of Code 2023 puzzles.
 *You've been doing this long enough to know that to restore snow operations, you need to check all fifty stars by December 25th.*
 *Collect stars by solving puzzles. [...]"* - ([Advent of Code](https://adventofcode.com/2023/day/1))
 
-## Preview
+<!-- ## Preview
 #### Day 8: Graph Visualization
 <img src="assets/day8_01.png" alt="drawing" width="300"/>
-
+ -->
 
 ## 🦌 Links
 <div>
