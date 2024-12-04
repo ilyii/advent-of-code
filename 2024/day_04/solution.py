@@ -24,41 +24,46 @@ images_path = os.path.join(par_dir, "images")
 
 @timer(return_time=True)
 def task1(day_input):
-    PATTERN = r"mul\((\d+),(\d+)\)"
-    mults = re.findall(PATTERN, day_input)
-    score = sum(int(a) * int(b) for a, b in mults)
-    return score
+    
+    grid = day_input.split("\n")
+    rows = len(grid)
+    cols = len(grid[0])
+    
+    directions = [
+        (0, 1),   
+        (0, -1),  
+        (1, 0),   
+        (-1, 0),  
+        (1, 1),  
+        (1, -1), 
+        (-1, 1), 
+        (-1, -1) 
+    ]
+    
+    count = 0
+    target = ["XMAS", "SMAX"]
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == "X":                
+                for dr, dc in directions:
+                    try:
+                        if 
+                            count += 1
+                    except IndexError:
+                        pass
+        
+    return count
 
 
 @timer(return_time=True)
 def task2(day_input):
-    PATTERN = r"mul\((\d+),(\d+)\)" 
-    ENABLE_PATTERN = r"do\(\)" 
-    DISABLE_PATTERN = r"don't\(\)"    
-
-    enabled = True
-    score = 0
-
-    for match in re.finditer(rf"{PATTERN}|{ENABLE_PATTERN}|{DISABLE_PATTERN}", day_input):
-        instruction = match.group(0)
-        
-        if re.match(ENABLE_PATTERN, instruction):
-            enabled = True
-        elif re.match(DISABLE_PATTERN, instruction):
-            enabled = False
-        elif re.match(PATTERN, instruction) and enabled:
-            x, y = map(int, re.findall(r"\d+", instruction))
-            score += x * y
-
-    return score
-
-    
-
+    # Day-specific code for Task 2
+    pass
 
 
 def main():
     INPUT_FILE = "input.txt"
-    # INPUT_FILE = "example_input.txt"
+    INPUT_FILE = "example_input.txt"
     # Choose between the real input or the example input
     day_input = load_input(os.path.join(cur_dir, INPUT_FILE))
 
@@ -77,14 +82,14 @@ def main():
     print(f"Task 1: {time_task1:.6f} seconds")
     print(f"Task 2: {time_task2:.6f} seconds")
 
-    # if INPUT_FILE == "input.txt":
-    #     # 1000 times and average the time
-    #     avg_time_task1 = average_time(1000, task1, day_input)
-    #     avg_time_task2 = average_time(1000, task2, day_input)
-    #     print("\nAverage times:")
-    #     print(f"Task 1: {avg_time_task1:.6f} seconds")
-    #     print(f"Task 2: {avg_time_task2:.6f} seconds")
-    #     write_times_to_readme(cur_day, avg_time_task1, avg_time_task2)
+    if INPUT_FILE == "input.txt":
+        # 1000 times and average the time
+        avg_time_task1 = average_time(1000, task1, day_input)
+        avg_time_task2 = average_time(1000, task2, day_input)
+        print("\nAverage times:")
+        print(f"Task 1: {avg_time_task1:.6f} seconds")
+        print(f"Task 2: {avg_time_task2:.6f} seconds")
+        write_times_to_readme(cur_day, avg_time_task1, avg_time_task2)
 
 
 if __name__ == "__main__":
