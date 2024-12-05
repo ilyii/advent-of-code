@@ -23,28 +23,55 @@ cur_day = int(cur_day[0]) if len(cur_day) > 0 else datetime.today().day
 images_path = os.path.join(par_dir, "images")
 
 # ------------------------------------------------------------------------------------------- #
-#                                        <START>                                              #
+#                                                                                             #
 # ------------------------------------------------------------------------------------------- #     
 @timer(return_time=True)
 def submission(p_input, profile=False):
-    inp = load_input(p_input)
+    inp = load_input(os.path.join(cur_dir, p_input))
 
     @timer(return_time=True)
-    def task1(inp):
-        """
-        TASK 1
-        """
-        # Day-specific code for Task 1
-        pass
+    def task1(day_input):
+        rules, schedules = day_input.split("\n\n")
+        rules = [list(map(int, rule.split("|"))) for rule in rules.split("\n")]
+        schedules = [list(map(int, s.split(","))) for s in schedules.split("\n")]
+        # print(rules)
+        # print(schedules)
+        score = 0
+        for schedule in schedules:
+            for idx, elem in enumerate(schedule):
+                # In all rules, elem must be schedule[0] where a subsequent elem is schedule[1]
+                if any([s,elem] in rules for s in schedule[idx+1:]):
+                    # print(schedule)
+                    break
+            else:
+                score += schedule[len(schedule)//2]
+        
+        return score
 
 
     @timer(return_time=True)
-    def task2(inp):
-        """
-        TASK 2
-        """
-        # Day-specific code for Task 2
-        pass
+    def task2(day_input):
+        rules, schedules = day_input.split("\n\n")
+        rules = [list(map(int, rule.split("|"))) for rule in rules.split("\n")]
+        schedules = [list(map(int, s.split(","))) for s in schedules.split("\n")]
+        def reorder_schedule(schedule, rules):
+            # Bubble sort according to the rules
+            for i in range(len(schedule)):
+                for j in range(i+1, len(schedule)):
+                    if [schedule[i], schedule[j]] in rules:
+                        schedule[i], schedule[j] = schedule[j], schedule[i]
+            return schedule[len(schedule)//2]
+
+        score = 0
+        for schedule in schedules:
+            for idx, elem in enumerate(schedule):
+                if any([s,elem] in rules for s in schedule[idx+1:]):
+                    score += reorder_schedule(schedule, rules)
+                    break
+
+            
+        return score
+
     
     if profile:
         result_task1, time_task1 = average_time(1000, task1, inp)
@@ -53,10 +80,10 @@ def submission(p_input, profile=False):
         result_task1, time_task1 = task1(inp)
         result_task2, time_task2 = task2(inp)
 
-
+    
     return result_task1, time_task1, result_task2, time_task2
 # ------------------------------------------------------------------------------------------- #
-#                                         <END>                                               #
+#                                                                                             #
 # ------------------------------------------------------------------------------------------- #
 
 
@@ -72,7 +99,7 @@ def main():
     if opt.submission:
         input_file = "input.txt"
 
-    result_task1, time_task1, result_task2, time_task2, total_time = submission(input_file)
+    (result_task1, time_task1, result_task2, time_task2), total_time = submission(input_file)
     
 
 

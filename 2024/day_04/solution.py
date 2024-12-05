@@ -14,7 +14,7 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 par_dir = os.path.dirname(cur_dir)
 sys.path.append(par_dir)
 
-from util import average_time, load_input, timer, write_times_to_readme
+from utils import average_time, load_input, timer, write_times_to_readme
 
 last_dir = str(os.path.basename(os.path.normpath(cur_dir)))
 cur_day = re.findall(r"\d+", last_dir)
@@ -41,29 +41,70 @@ def task1(day_input):
     ]
     
     count = 0
-    target = ["XMAS", "SMAX"]
     for r in range(rows):
         for c in range(cols):
             if grid[r][c] == "X":                
                 for dr, dc in directions:
-                    try:
-                        if 
+                     if (
+                        0 <= r + dr < rows and
+                        0 <= c + dc < cols and
+                        0 <= r + 2*dr < rows and
+                        0 <= c + 2*dc < cols and
+                        0 <= r + 3*dr < rows and
+                        0 <= c + 3*dc < cols
+                    ):
+                        if (
+                            grid[r + dr][c + dc] == "M" and
+                            grid[r + 2*dr][c + 2*dc] == "A" and
+                            grid[r + 3*dr][c + 3*dc] == "S"
+                        ):
                             count += 1
-                    except IndexError:
-                        pass
         
     return count
 
 
 @timer(return_time=True)
 def task2(day_input):
-    # Day-specific code for Task 2
-    pass
+    grid = day_input.split("\n")
+    rows = len(grid)
+    cols = len(grid[0])
+    
+    directions = [
+        (1, 1),  
+        (-1, -1) 
+    ]
+    
+    count = 0
+    for r in range(rows):
+        for c in range(cols):
+            if grid[r][c] == "A":                
+                for dr, dc in directions:
+                     if (
+                        0 <= r + dr < rows and
+                        0 <= c + dc < cols and
+                        0 <= r - dr < rows and
+                        0 <= c - dc < cols
+                    ):
+                        if (
+                            (grid[r + dr][c + dc] == "M" and
+                            grid[r - dr][c - dc] == "S") and
+                            (
+                                (grid[r - dr][c + dc] == "M" and
+                            grid[r + dr][c - dc] == "S")
+                              or
+                            (grid[r - dr][c + dc] == "S" and
+                            grid[r + dr][c - dc] == "M")
+                            )
+
+                        ):
+                            count += 1
+        
+    return count
 
 
 def main():
     INPUT_FILE = "input.txt"
-    INPUT_FILE = "example_input.txt"
+    # INPUT_FILE = "example_input_2.txt"
     # Choose between the real input or the example input
     day_input = load_input(os.path.join(cur_dir, INPUT_FILE))
 

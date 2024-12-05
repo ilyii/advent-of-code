@@ -43,10 +43,15 @@ def create_day_folder(day):
     folder_path = os.path.join(cur_dir, folder_path)
     if os.path.exists(folder_path):
         print_color(f"Folder for Day {day} already exists.", Fore.YELLOW)
-        if input("Do you want to overwrite it? (y/n): ").lower() != "y":
-            sys.exit(0)
-        shutil.rmtree(folder_path, ignore_errors=True)
-    os.mkdir(folder_path)
+        res = input("Do you want to (o)verwrite or (s)kip? ").lower() 
+        if res == "s":
+            return folder_path
+        elif res == "o":
+            shutil.rmtree(folder_path, ignore_errors=True)
+        else:
+            print_color(f"Invalid option '{res}'. Skipping...", Fore.RED)
+            return folder_path
+    os.makedirs(folder_path, exist_ok=True)
     return folder_path
 
 
@@ -128,10 +133,12 @@ def create_python_script(day, template_path):
     with open(template_path, "r") as template_file:
         template_content = template_file.read()
 
-    with open(script_path, "w") as script_file:
-        script_file.write(template_content)
-
-    print_color(f"Python script for Day {day} created.", Fore.GREEN)
+    if not os.path.exists(script_path):
+        with open(script_path, "w") as script_file:
+            script_file.write(template_content)
+            print_color(f"Python script for Day {day} created.", Fore.GREEN)
+    else:
+        print_color(f"Python script for Day {day} already exists. Skipping...", Fore.YELLOW)
 
 
 def create_markdown(day, description):

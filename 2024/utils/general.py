@@ -40,10 +40,10 @@ def load_input(input_file_path):
         with open(input_file_path, "r", encoding="utf-8") as input_file:
             return input_file.read().strip()
     except FileNotFoundError:
-        print(f"Error: Input file not found ({input_file_path})")
+        print(f"(load_input) Error: Input file not found ({input_file_path})")
         sys.exit(1)
     except Exception as e:
-        print(f"Error loading input {input_file_path}: {e}")
+        print(f"(load_input) Error loading input {input_file_path}: {e}")
         sys.exit(1)
 
 

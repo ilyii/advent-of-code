@@ -14,7 +14,7 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 par_dir = os.path.dirname(cur_dir)
 sys.path.append(par_dir)
 
-from util import average_time, load_input, timer, write_times_to_readme
+from utils import average_time, load_input, timer, write_times_to_readme
 
 last_dir = str(os.path.basename(os.path.normpath(cur_dir)))
 cur_day = re.findall(r"\d+", last_dir)
