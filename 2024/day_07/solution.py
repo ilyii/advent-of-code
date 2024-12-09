@@ -27,24 +27,64 @@ images_path = os.path.join(par_dir, "images")
 # ------------------------------------------------------------------------------------------- #     
 @timer(return_time=True)
 def submission(p_input, profile=False):
-    inp = load_input(p_input)
+    inp = load_input(p_input).splitlines()
+    inp = [
+        (int(line.split(":")[0].strip()), list(map(int, line.split(":")[1].strip().split())))
+        for line in inp
+    ]
+
+
+
 
     @timer(return_time=True)
     def task1(inp):
         """
         TASK 1
         """
-        # Day-specific code for Task 1
-        pass
+        total = 0
+        for res, inputs in inp:
+            n = len(inputs)
+            
+            operations = list(product("+*", repeat=n-1))
+            for ops in operations:
+                current = inputs[0]
+                for i, op in enumerate(ops):
+                    if op == "+":
+                        current += inputs[i+1]
+                    elif op == "*":
+                        current *= inputs[i+1]
+                if current == res:
+                    total += res
+                    break  
 
-
+        
+        return total
+    
     @timer(return_time=True)
     def task2(inp):
         """
         TASK 2
         """
-        # Day-specific code for Task 2
-        pass
+        total = 0
+        for res, inputs in inp:
+            n = len(inputs)
+            
+            operations = list(product("+*|", repeat=n-1))
+            for ops in operations:
+                current = inputs[0]
+                for i, op in enumerate(ops):
+                    if op == "+":
+                        current += inputs[i+1]
+                    elif op == "*":
+                        current *= inputs[i+1]
+                    elif op == "|":
+                        current = int(str(current) + str(inputs[i+1]))
+                if current == res:
+                    total += res
+                    break  
+
+        
+        return total
     
     if profile:
         result_task1, time_task1 = average_time(1000, task1, inp)

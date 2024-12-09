@@ -34,6 +34,15 @@ def timer(return_time=False):
 
     return decorator
 
+def timer_wrapper(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"{func.__name__}: {execution_time:.6f} seconds")
+        return result
+    return wrapper
 
 def load_input(input_file_path):
     try:

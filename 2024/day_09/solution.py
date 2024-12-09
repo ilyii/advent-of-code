@@ -27,16 +27,51 @@ images_path = os.path.join(par_dir, "images")
 # ------------------------------------------------------------------------------------------- #     
 @timer(return_time=True)
 def submission(p_input, profile=False):
-    inp = load_input(p_input)
+    inp = list(map(int, list(load_input(p_input))))
+
+    def parse(inp):
+        id_counter = 0
+        new_inp = ""
+        for idx, elem in enumerate(inp):
+            if idx % 2 == 0:
+                new_inp += elem*f"{id_counter}"
+                id_counter+=1
+            else:
+                new_inp += elem*f"."
+            
+            
+        return list(new_inp)
+
+    def compress(inp):
+        # use the last digit and replace it with the first "." found
+        for idx, elem in enumerate(inp):
+            if elem == ".":
+                if not any([x.isdigit() for x in inp[idx:]]):
+                    break
+                for idx2, elem in enumerate(reversed(inp)):                    
+                    if elem.isdigit():
+                        inp[idx] = elem
+                        inp[len(inp)-idx2-1] = "."
+                        break
+
+        return inp
+                        
+
+
 
     @timer(return_time=True)
     def task1(inp):
         """
         TASK 1
         """
-        # Day-specific code for Task 1
-        pass
-
+        # 1. Parse input
+        # 2. Compact
+        # 3. Checksum
+        new_inp = parse(inp)
+        compressed = compress(new_inp)
+        checksum = sum(idx*int(elem) for idx, elem in enumerate(compressed) if elem.isdigit())
+        return checksum
+        
 
     @timer(return_time=True)
     def task2(inp):
