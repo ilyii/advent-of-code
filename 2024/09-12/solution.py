@@ -29,47 +29,37 @@ images_path = os.path.join(par_dir, "images")
 def submission(p_input, profile=False):
     inp = list(map(int, list(load_input(p_input))))
 
-    def parse(inp):
-        id_counter = 0
-        new_inp = ""
-        for idx, elem in enumerate(inp):
-            if idx % 2 == 0:
-                new_inp += elem*f"{id_counter}"
-                id_counter+=1
-            else:
-                new_inp += elem*f"."
-            
-            
-        return list(new_inp)
-
-    def compress(inp):
-        # use the last digit and replace it with the first "." found
-        for idx, elem in enumerate(inp):
-            if elem == ".":
-                if not any([x.isdigit() for x in inp[idx:]]):
-                    break
-                for idx2, elem in enumerate(reversed(inp)):                    
-                    if elem.isdigit():
-                        inp[idx] = elem
-                        inp[len(inp)-idx2-1] = "."
-                        break
-
-        return inp
-                        
-
-
 
     @timer(return_time=True)
     def task1(inp):
         """
         TASK 1
         """
-        # 1. Parse input
-        # 2. Compact
-        # 3. Checksum
-        new_inp = parse(inp)
-        compressed = compress(new_inp)
-        checksum = sum(idx*int(elem) for idx, elem in enumerate(compressed) if elem.isdigit())
+        expanded = []
+        for i, length in enumerate(map(int, inp)):
+            expanded.extend([str(i // 2)] * length if i % 2 == 0 else ['.'] * length)
+
+        leftmost_free = 0  
+        for i in range(len(expanded)):
+            if expanded[i] == '.':
+                leftmost_free = i
+                break
+
+        for i in range(len(expanded) - 1, -1, -1):
+            if expanded[i] != '.': 
+                if leftmost_free < i:
+                    expanded[leftmost_free], expanded[i] = expanded[i], '.'
+                    for j in range(leftmost_free + 1, len(expanded)):
+                        if expanded[j] == '.':
+                            leftmost_free = j
+                            break
+        
+        
+        checksum = 0
+        for pos, block in enumerate(expanded):
+            if block != '.':
+                checksum += pos * int(block)
+
         return checksum
         
 
@@ -78,8 +68,40 @@ def submission(p_input, profile=False):
         """
         TASK 2
         """
-        # Day-specific code for Task 2
-        pass
+        expanded = []
+        for i, length in enumerate(map(int, inp)):
+            expanded.extend([str(i // 2)] * length if i % 2 == 0 else ['.'] * length)
+
+        file_ids = sorted(set(block for block in expanded if block != '.'), reverse=True)
+
+        for file_id in file_ids:
+            file_blocks = [i for i, block in enumerate(expanded) if block == file_id]
+            file_size = len(file_blocks)
+
+            free_start = None
+            free_length = 0
+            for i, block in enumerate(expanded):
+                if block == '.':
+                    if free_start is None:
+                        free_start = i
+                    free_length += 1
+                    if free_length == file_size:
+                        if free_start < file_blocks[0]:
+                            for idx in file_blocks:
+                                expanded[idx] = '.'  
+                            for j in range(free_start, free_start + file_size):
+                                expanded[j] = file_id 
+                            break
+                else:
+                    free_start = None
+                    free_length = 0
+
+        checksum = 0
+        for pos, block in enumerate(expanded):
+            if block != '.':
+                checksum += pos * int(block)
+
+        return checksum
     
     if profile:
         result_task1, time_task1 = average_time(1000, task1, inp)
