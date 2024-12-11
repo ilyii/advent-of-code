@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 init()
 load_dotenv()
 AOC_SESSION = os.getenv("AOC_SESSION")
+
 def printc(message, color=Fore.WHITE, style=Style.NORMAL):
     print(f"{style}{color}{message}{Style.RESET_ALL}")
 
@@ -104,10 +105,12 @@ def create_python_script(day, template_path):
     script_path = f"{day:02d}-12/solution.py"
     script_path = os.path.join(cur_dir, script_path)
 
-
+    with open(template_path, "r") as template_file:
+        template = template_file.read()
 
     if not os.path.exists(script_path):
-        with open(script_path, "w+"):
+        with open(script_path, "w+") as script_file:
+            script_file.write(template)
             printc(f"Python script for Day {day} created.", Fore.GREEN)
     else:
         printc(f"Python script for Day {day} already exists. Skipping...", Fore.YELLOW)
