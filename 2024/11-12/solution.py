@@ -1,6 +1,6 @@
 import argparse
 import os
-from collections import defaultdict, deque
+from collections import Counter, defaultdict, deque
 
 import numpy as np
 
@@ -9,45 +9,32 @@ def get_args():
     parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
     return parser.parse_args()
 
-
-
 def submission(stones):
-    from collections import defaultdict
-    stone_counts = defaultdict(int)
-    for stone in stones:
-        stone_counts[stone] += 1
-    memory = {}
+    def process(counter, iterations):
+        current_state = Counter(counter)
 
-    def process(current_state, iterations):
-        if iterations == 0:
-            return sum(current_state.values())
+        for _ in range(iterations):
+            new_state = Counter()
+            for stone, count in current_state.items():
+                if stone == 0: # 0
+                    new_state[1] += count  
+                else:
+                    stone_str = str(stone)
+                    length = len(stone_str)
+                    if length % 2 == 0:  # Even
+                        mid = length // 2
+                        left = int(stone_str[:mid])
+                        right = int(stone_str[mid:])
+                        new_state[left] += count
+                        new_state[right] += count
+                    else:  # Odd
+                        new_state[stone * 2024] += count
+            current_state = new_state
 
-        if (tuple(current_state.items()), iterations) in memory:
-            return memory[(tuple(current_state.items()), iterations)]
+        return sum(current_state.values())
 
-        new_state = defaultdict(int)
-
-        for stone, count in current_state.items():
-            if stone == 0:
-                new_state[1] += count # 0
-            else:
-                stone_str = str(stone)
-                length = len(stone_str)
-                if length % 2 == 0:  # Even
-                    mid = length // 2
-                    left = int(stone_str[:mid])
-                    right = int(stone_str[mid:])
-                    new_state[left] += count
-                    new_state[right] += count
-                else:  # Odd
-                    new_state[stone * 2024] += count
-
-        result = process(new_state, iterations - 1)
-        memory[(tuple(current_state.items()), iterations)] = result
-        return result
-
-
-    return process(stone_counts, 25), process(stone_counts, 75)
+    counter = Counter(stones)
+    return process(counter, 25), process(counter, 75)
 
 
 def main():
