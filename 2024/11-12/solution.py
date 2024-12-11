@@ -44,11 +44,10 @@ def main():
     if opt.submission:
         inputpath = "input.txt"
 
-    with open(inputpath, "r") as file:
+    with open(inputpath, "r", encoding="utf-8") as file:
         data = file.read().splitlines()
     data = np.array(list(map(int, data[0].split())))
-    
-    
+
     result1, result2 = submission(data)
 
     print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
