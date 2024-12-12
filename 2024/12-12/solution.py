@@ -1,98 +1,48 @@
-import argparse
 import os
-from collections import defaultdict, deque
-
+import argparse
 import numpy as np
+from scipy.ndimage import label, convolve
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
     return parser.parse_args()
 
-DIRECTIONS = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-DIRECTION_NAMES = ["R", "D", "L", "U"]
-
-def submission(data):
-    # grid walk: every square has a perimeter of 4 - num neighbors it has (when checking border, perimeter is true)
-
-    visited = set()
-    n,m = data.shape
-    total_perimeter = 0
+def calculate_metrics(data):
+    chars = np.unique(data)
+    total_perimeter, total_edges = 0, 0
     
-    fields = list()
-    total_sides = 0
-    outer_pos = list()
-    while len(visited) < n*m:
-        for x in range(n):
-            for y in range(m):
-                if (x,y) not in visited:
-                    char = data[x, y]
-                    perimeter = 0
-                    num_elems = 0
-                    stack = [(x,y)]
-                    field = set()
-                    outpos = set()
-                    while stack:
-                        nx,ny = stack.pop()
-                        if (nx,ny) in visited:
-                            continue
-                        field.add((nx,ny))
-                        visited.add((nx,ny))
-
-                        num_elems += 1
-                        for idx, (dx,dy) in enumerate(DIRECTIONS):
-                            if nx+dx < 0 or nx+dx >= n or ny+dy < 0 or ny+dy >= m:
-                                perimeter += 1
-                                outpos.add((nx,ny, dx,dy))
+    for char in chars:
+        labeled_grid, num_regions = label(data == char)
+        
+        for region_id in range(1, num_regions + 1):
+            region = (labeled_grid == region_id).astype(int)
+            area = np.count_nonzero(region)
+            padded_region = np.pad(region, 1)
             
-                            elif data[nx+dx, ny+dy] != char:
-                                perimeter += 1
-                                outpos.add((nx,ny, dx,dy))
-                            else:
+            kernel = np.array([[1, -1], [0, 0]])
+            border_count = lambda mask: np.count_nonzero(convolve(mask, kernel))
+            perimeter = sum(border_count(np.rot90(padded_region, k=i)) for i in range(4))
+            
+            edges = sum(label(convolve(np.rot90(padded_region, k=i), kernel) == 1)[1] for i in range(4))
 
-                                stack.append((nx+dx, ny+dy))
+            total_perimeter += perimeter*area //2
+            total_edges += edges*area
 
-                                
-                    fields.append(field)
-                    outer_pos.append(list(outpos))
-
-                    total_perimeter += num_elems*perimeter
-    
-    for outpos in outer_pos:
-        if outpos[2] == 0:
-            total_sides += 1
-        elif outpos[2] == 1:
-            total_sides += 1
-        elif outpos[2] == 2:
-            total_sides += 1
-        elif outpos[2] == 3:
-            total_sides += 1
-    
- 
-
-    return total_perimeter, total_sides
-
-
+    return total_perimeter, total_edges
 
 def main():
-    inputpath = "example_input.txt"
-
-    opt = get_args()
-    if opt.submission:
-        inputpath = "input.txt"
-
-    with open(inputpath, "r") as file:
-        data = file.read().splitlines()
-    data = np.array([np.array(list(line)) for line in data])
+    input_file = "input.txt" if get_args().submission else "example_input.txt"
+    
+    with open(input_file, "r") as file:
+        data = np.array([list(line) for line in file.read().splitlines()])
     print(data)
-    
-    
-    result1, result2  = submission(data)
 
-    print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
+    result1, result2 = calculate_metrics(data)
+
+    print(f"-----{os.path.basename(os.getcwd())}-----")
     print(f"Part 1: {result1}")
     print(f"Part 2: {result2}")
-
 
 if __name__ == "__main__":
     main()
