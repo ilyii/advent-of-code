@@ -22,10 +22,11 @@ def combo(operand, registers):
         return registers[operand - 4]
     
 
-def step(registers, program, pc, out):
+def step(registers, program, pc):
     """
     Program logic.
     """
+    out = []
     opcode = program[pc]
     operand = program[pc + 1]
     combo_operand = combo(operand, registers)
@@ -54,37 +55,35 @@ def compute(registers, program):
     """
     Run the program.
     """
-    instruction_pointer = 0
-    out = []
-    while instruction_pointer < len(program):
-        registers, instruction_pointer, out = step(registers, program, instruction_pointer, out)
-    return out
+
 
 
 def submission(data:Any) -> Tuple[Number, Number]:
     registers, program = data
 
     # Part 1
-    part_1 = ','.join([str(x) for x in compute(registers, program)])
-
+    part_1 = []
+    pc = 0
+    while pc < len(program):
+        registers, pc, o = step(registers, program, pc)
+        part_1.extend(o)
+    
     # Part 2
     # - The program depends on A, iteratively shifted by 3 bits (divided by 8).
 
-    possibilities = {0: [x for x in range(8)]}
-    for exponent in range(1, len(program)):
-        possibilities[exponent] = []
-        for p in possibilities[exponent - 1]:
-            for q in range(8):
-                ra = 8 * p + q
-                registers[0] = ra
-                out = compute(registers, program)
-                l = len(out)
-                if out == program[len(program) - l:]:
-                    possibilities[exponent].append(ra)
-                if out == program:
-                    part_2 = ra
+    def find(program, reg, pc):
+        if abs(pc) > len(program): 
+            return reg[0]
+        for i in range(8):
+            digit = step([(reg[0] * 8) + i, reg[1], reg[2]],program, pc)[0]
+            if digit == program[pc]:
+                e = find(program, [reg[0] * 8 + i, reg[1], reg[2]], pc - 1)
+                if e: 
+                    return e
 
-    return part_1, part_2
+    part_2 = find(program, [0, registers[1], registers[2]], -1)
+
+    return ",".join(map(str, part_1)), part_2
 
 if __name__ == "__main__":
     opt = get_args()
