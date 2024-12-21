@@ -9,15 +9,14 @@ def get_args():
     return parser.parse_args()
 
 
-def parse_input(args):
+def read(args):
     """ Parse input """
     if args.submission:
         filepath = "input.txt"
     else:
         filepath = "example_input.txt"
 
-    with open(filepath, "r", encoding="utf-8") as f:
-        return f.read()
+    return open(filepath, "r", encoding="utf-8")
 
 
 def printr(results):
@@ -30,7 +29,7 @@ def printr(results):
 
 if __name__ == "__main__":
     opt = get_args()
-    data = parse_input(opt)
+    data = read(opt)
 
 
     # printr(opt, [result1, result2])
