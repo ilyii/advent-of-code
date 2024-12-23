@@ -11,7 +11,8 @@ def get_args():
     """Argparse"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-s", "--submission", action="store_true", help="Use real input for submission"
+        "-s", "--submission", action="store_true", 
+        help="Use input.txt for submission"
     )
     return parser.parse_args()
 
