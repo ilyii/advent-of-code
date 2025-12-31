@@ -3,8 +3,13 @@ from collections import Counter, defaultdict
 from functools import cache
 from itertools import pairwise
 import os
+import sys
 
 import numpy as np
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -47,20 +52,24 @@ if __name__ == "__main__":
     opt = get_args()
     data = read(opt)
 
-    part_1 = 0
-    part_2 = Counter()
-    last_nums = []
-    for s in (map(int, data)):
-        nums = [s] + [s := f(s) for _ in range(2000)]
-        part_1 += nums[-1]
+    with profile(opt.submission) as results:
+        part_1 = 0
+        part_2 = Counter()
+        last_nums = []
+        for s in (map(int, data)):
+            nums = [s] + [s := f(s) for _ in range(2000)]
+            part_1 += nums[-1]
 
-        diffs = [b%10-a%10 for a,b in pairwise(nums)]
+            diffs = [b%10-a%10 for a,b in pairwise(nums)]
 
-        seen = set()
-        for i in range(len(nums)-4):
-            seq = tuple(diffs[i:i+4])
-            if seq not in seen:
-                seen.add(seq)
-                part_2[seq] += nums[i+4]%10
+            seen = set()
+            for i in range(len(nums)-4):
+                seq = tuple(diffs[i:i+4])
+                if seq not in seen:
+                    seen.add(seq)
+                    part_2[seq] += nums[i+4]%10
+        
+        results["part1"] = part_1
+        results["part2"] = max(part_2.values())
 
     printr([part_1, max(part_2.values())])

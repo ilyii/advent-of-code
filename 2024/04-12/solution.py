@@ -1,3 +1,4 @@
+import argparse
 import math
 import os
 import re
@@ -13,6 +14,10 @@ from tqdm import tqdm
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 par_dir = os.path.dirname(cur_dir)
 sys.path.append(par_dir)
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(par_dir))
+from profiler import profile
 
 from utils import average_time, load_input, timer, write_times_to_readme
 
@@ -102,15 +107,25 @@ def task2(day_input):
     return count
 
 
+def get_args():
+    """Argparse"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
+    return parser.parse_args()
+
+
 def main():
-    INPUT_FILE = "input.txt"
-    # INPUT_FILE = "example_input_2.txt"
+    opt = get_args()
+    INPUT_FILE = "input.txt" if opt.submission else "example_input_2.txt"
     # Choose between the real input or the example input
     day_input = load_input(os.path.join(cur_dir, INPUT_FILE))
 
-    # Call the tasks and store their results (if needed)
-    result_task1, time_task1 = task1(day_input)
-    result_task2, time_task2 = task2(day_input)
+    with profile(opt.submission) as results:
+        # Call the tasks and store their results (if needed)
+        result_task1, time_task1 = task1(day_input)
+        result_task2, time_task2 = task2(day_input)
+        results["part1"] = result_task1
+        results["part2"] = result_task2
 
     print(f"\nDay {cur_day}")
     print("------------------")
@@ -122,15 +137,6 @@ def main():
     print("\nTimes:")
     print(f"Task 1: {time_task1:.6f} seconds")
     print(f"Task 2: {time_task2:.6f} seconds")
-
-    if INPUT_FILE == "input.txt":
-        # 1000 times and average the time
-        avg_time_task1 = average_time(1000, task1, day_input)
-        avg_time_task2 = average_time(1000, task2, day_input)
-        print("\nAverage times:")
-        print(f"Task 1: {avg_time_task1:.6f} seconds")
-        print(f"Task 2: {avg_time_task2:.6f} seconds")
-        write_times_to_readme(cur_day, avg_time_task1, avg_time_task2)
 
 
 if __name__ == "__main__":

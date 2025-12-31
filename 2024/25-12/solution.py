@@ -1,8 +1,13 @@
 import argparse
 from itertools import combinations
 import os
+import sys
 
 import numpy as np
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -47,12 +52,14 @@ if __name__ == "__main__":
         else:
             locks.append(str2bool(scheme))
     
-    part_1 = 0
-    for lock in locks:
-        for key in keys:
-            if not np.any(np.logical_and(lock, key)):
-                part_1 += 1
-    
-
+    with profile(opt.submission) as results:
+        part_1 = 0
+        for lock in locks:
+            for key in keys:
+                if not np.any(np.logical_and(lock, key)):
+                    part_1 += 1
+        
+        results["part1"] = part_1
+        results["part2"] = None
 
     printr([part_1])

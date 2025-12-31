@@ -2,6 +2,11 @@ import argparse
 from collections import defaultdict
 from itertools import combinations
 import os
+import sys
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -40,25 +45,29 @@ if __name__ == "__main__":
         nodes.update([a, b])
         edges.update([(a,b), (b,a)])
 
-    # 1. Iterate over all possible triplets of nodes
-    # 2. Check if the triplet forms a triangle
-    # 3. Check if any element starts with a 't'
-    part_1 = sum({(a,b), (b,c), (c,a)} < edges
-            and 't' in (a + b + c)[::2]
-            for a, b, c in combinations(nodes, 3))
+    with profile(opt.submission) as results:
+        # 1. Iterate over all possible triplets of nodes
+        # 2. Check if the triplet forms a triangle
+        # 3. Check if any element starts with a 't'
+        part_1 = sum({(a,b), (b,c), (c,a)} < edges
+                and 't' in (a + b + c)[::2]
+                for a, b, c in combinations(nodes, 3))
 
 
-    
-    # 1. Create an adjacency list representation of the graph
-    # 2. Find all connected components in the graph
-    # 3. Find the largest component and sort it
-    part_2 = [{n} for n in nodes]
-    for p in part_2:
-        for n in nodes:
-            if all((n, m) in edges for m in p):
-                p.add(n)
+        
+        # 1. Create an adjacency list representation of the graph
+        # 2. Find all connected components in the graph
+        # 3. Find the largest component and sort it
+        part_2 = [{n} for n in nodes]
+        for p in part_2:
+            for n in nodes:
+                if all((n, m) in edges for m in p):
+                    p.add(n)
 
-    part_2 = ",".join(sorted(max(part_2, key=len)))
+        part_2 = ",".join(sorted(max(part_2, key=len)))
+        
+        results["part1"] = part_1
+        results["part2"] = part_2
 
     printr([part_1, part_2])
 

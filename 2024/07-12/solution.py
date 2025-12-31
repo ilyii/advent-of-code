@@ -15,6 +15,10 @@ cur_dir = os.path.dirname(os.path.abspath(__file__))
 par_dir = os.path.dirname(cur_dir)
 sys.path.append(par_dir)
 
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(par_dir))
+from profiler import profile
+
 from utils import average_time, load_input, timer, write_times_to_readme
 
 last_dir = str(os.path.basename(os.path.normpath(cur_dir)))
@@ -112,9 +116,10 @@ def main():
     if opt.submission:
         input_file = "input.txt"
 
-    (result_task1, time_task1, result_task2, time_task2), total_time = submission(input_file)
-    
-
+    with profile(opt.submission) as results:
+        (result_task1, time_task1, result_task2, time_task2), total_time = submission(input_file)
+        results["part1"] = result_task1
+        results["part2"] = result_task2
 
     print(f"\nDay {cur_day}")
     print("------------------")
@@ -126,18 +131,6 @@ def main():
     print("\nTimes:")
     print(f"Task 1: {time_task1:.6f} seconds")
     print(f"Task 2: {time_task2:.6f} seconds")
-
-    if opt.submission:
-        # 1000 times and average the time
-        avg_time_task1 = submission(input_file, profile=True)[1]
-        avg_time_task2 = submission(input_file, profile=True)[3]
-        avg_total_time = submission(input_file, profile=True)[4]
-
-        print("\nAverage times:")
-        print(f"Task 1: {avg_time_task1:.6f} seconds")
-        print(f"Task 2: {avg_time_task2:.6f} seconds")
-        print(f"Total time: {avg_total_time:.6f} seconds")
-        write_times_to_readme(cur_day, avg_time_task1, avg_time_task2)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,19 @@
-import time
+import argparse
+import os
 import sys
+import time
 from itertools import count
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
+
+
+def get_args():
+    """Argparse"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
+    return parser.parse_args()
 
 DIRECTIONS = {(-1, 0): '|F7', # Up
               (1, 0): '|LJ', # Down
@@ -90,19 +103,21 @@ def main(data):
 
 
 if __name__ == "__main__":
+    opt = get_args()
+    inputpath = "input.txt" if opt.submission else "example_input.txt"
+    
+    with open(inputpath) as f:
+        data = f.read().strip()
 
-	with open("input.txt") as f:
-		data = f.read().strip()
+    with profile(opt.submission) as results:
+        grid = [list(line.rstrip()) for line in data.splitlines()]
+        main_loop, loop_len = part1(grid)
+        max_pipe_distance = loop_len // 2
+        area = part2(grid, main_loop)
+        results["part1"] = max_pipe_distance
+        results["part2"] = area
 
-	s1 = time.time()
-	answer_1 = main(data)
-	s2 = time.time()
-	print(f"Part 1: {answer_1}")
-
-	s3 = time.time()
-	answer_2 = "TODO"
-	s4 = time.time()
-	print(f"Part 2: {answer_2}")    
-
-	print(f'Times: {(s2-s1)*1000:.4f}ms, {(s4-s3)*1000:.4f}ms')
+    print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
+    print(f"Part 1: {max_pipe_distance}")
+    print(f"Part 2: {area}")
 

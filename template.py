@@ -1,35 +1,40 @@
 import argparse
 import os
+import sys
+
+# Add repo root for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
-def get_args():
-    """ Argparse """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
-    return parser.parse_args()
+def read(submission=False):
+    """Read input file"""
+    path = "input.txt" if submission else "example_input.txt"
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read().strip()
 
 
-def read(args):
-    """ Parse input """
-    if args.submission:
-        filepath = "input.txt"
-    else:
-        filepath = "example_input.txt"
+def solve(data):
+    """Solve both parts - modify this!"""
+    lines = data.splitlines()
+    
+    part1 = None
+    part2 = None
+    
+    return part1, part2
 
-    return open(filepath, "r", encoding="utf-8")
-
-
-def printr(results):
-    """ Print results """
-    print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
-    for idx, result in enumerate(results):
-        print(f"Part {idx+1}: {result}")
-
-    print("--------------------")
 
 if __name__ == "__main__":
-    opt = get_args()
-    data = read(opt)
-
-
-    # printr(opt, [result1, result2])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--submission", action="store_true", help="Use real input")
+    args = parser.parse_args()
+    
+    data = read(args.submission)
+    
+    with profile(args.submission) as results:
+        p1, p2 = solve(data)
+        results["part1"] = p1
+        results["part2"] = p2
+    
+    print(f"Part 1: {p1}")
+    print(f"Part 2: {p2}")

@@ -2,7 +2,12 @@ import argparse
 from collections import Counter, defaultdict
 from functools import cache
 import os
+import sys
 import re
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 
@@ -72,15 +77,19 @@ if __name__ == "__main__":
             px, py = nx, ny
         return res
 
-
-    part_1 = part_2 = 0
-    for code in data:
-        res = translate(NUMPAD, code)
-        for idx in range(25+1):
-            res = sum((translate(REMOTEPAD, 
-                                ("<" * int(-c.imag) + "v" * int(c.real) + "^" * int(-c.real) + ">" * int(c.imag))[:: -1 if f else 1] + "A", res[(c, f)]) for c, f in res), Counter())   
-            if idx < 2:
-                part_1 += res.total() * int(code[:3])
-            
-            part_2 += res.total() * int(code[:3])
+    with profile(opt.submission) as results:
+        part_1 = part_2 = 0
+        for code in data:
+            res = translate(NUMPAD, code)
+            for idx in range(25+1):
+                res = sum((translate(REMOTEPAD, 
+                                    ("<" * int(-c.imag) + "v" * int(c.real) + "^" * int(-c.real) + ">" * int(c.imag))[:: -1 if f else 1] + "A", res[(c, f)]) for c, f in res), Counter())   
+                if idx < 2:
+                    part_1 += res.total() * int(code[:3])
+                
+                part_2 += res.total() * int(code[:3])
+        
+        results["part1"] = part_1
+        results["part2"] = part_2
+    
     printr([part_1, part_2])

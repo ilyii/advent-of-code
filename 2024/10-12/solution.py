@@ -1,8 +1,13 @@
 import argparse
 import os
+import sys
 from collections import defaultdict, deque
 
 import numpy as np
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -69,8 +74,11 @@ def main():
     with open(inputpath, "r") as file:
         data = file.read().splitlines()
     data = np.array([np.array(list(map(int,list(line)))) for line in data])
-    
-    result1, result2  = submission(data)
+
+    with profile(opt.submission) as results:
+        result1, result2 = submission(data)
+        results["part1"] = result1
+        results["part2"] = result2
 
     print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
     print(f"Part 1: {result1}")

@@ -164,3 +164,15 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# AOC inputs (personal puzzle inputs)
+inputs/
+
+# Metrics data
+data/metrics.json
+
+# Keep old structure during migration
+# 2022/*/input.txt
+# 2023/*/input.txt
+# 2024/*/input.txt
+# 2025/*/input.txt

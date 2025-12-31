@@ -1,8 +1,13 @@
 import argparse
 import os
+import sys
 from numbers import Number
 import re
 from typing import Any, Tuple
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -100,14 +105,14 @@ if __name__ == "__main__":
     program = list(map(int, re.findall(r"\d+", data.split("\n\n")[1])))
 
     data = (register_values, program)
+    
     # ---- SUBMISSION ---- #
-    result1, result2 = submission(data)
+    with profile(opt.submission) as results:
+        result1, result2 = submission(data)
+        results["part1"] = result1
+        results["part2"] = result2
 
     # ---- OUTPUT ---- #
     print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
     print(f"Part 1: {result1}")
     print(f"Part 2: {result2}")
-
-    # import timeit
-    # res = timeit.timeit(lambda: submission(data), number=10)
-    # print(f"Time: {res/10:.7f}s")

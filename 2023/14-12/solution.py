@@ -2,8 +2,13 @@ import argparse
 from collections import defaultdict
 import os
 import re
+import sys
 
 import numpy as np
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -50,26 +55,18 @@ if __name__ == "__main__":
     def roll(d):
         return re.sub("[.O]+", lambda m: "".join(sorted(m[0])[::-1]), tilt(d))
     
-    part_1 = count(roll(roll(roll(roll(data)))))
-    
+    with profile(opt.submission) as results:
+        part_1 = count(roll(roll(roll(roll(data)))))
+        
 
-    def spinner(data, n, cache={}):
-        for r in range(n):
-            data = roll(roll(roll(roll(data))))
-            if s:=cache.get(data,0): return cache[ (n-s) % (r-s) + (s-1) ]
-            cache |= {data:r, r:count(tilt(data))}
+        def spinner(data, n, cache={}):
+            for r in range(n):
+                data = roll(roll(roll(roll(data))))
+                if s:=cache.get(data,0): return cache[ (n-s) % (r-s) + (s-1) ]
+                cache |= {data:r, r:count(tilt(data))}
+        
+        part_2 = spinner(data,1_000_000_000)
+        results["part1"] = part_1
+        results["part2"] = part_2
     
-    part_2 = spinner(data,1_000_000_000)
     printr([part_1, part_2])
-
-    rotate_90 = lambda b: ' '.join(map(''.join,zip(*(b.split())[::-1])))
-    beam_load = lambda b: sum(i for r in b.split() for i,c in enumerate(r[::-1],1) if c=='O')
-    one_cycle = lambda d: re.sub('[.O]+',lambda m:''.join(sorted(m[0])[::-1]), rotate_90(d))
-    print('part 1:', beam_load(one_cycle(rotate_90(rotate_90(open("input.txt").read().replace('\n',' '))))))
-    d = open("input.txt").read().replace("\n", " ")
-    def powercycle(data, n, cache={}):
-        for r in range(n):
-            data = one_cycle(one_cycle(one_cycle(one_cycle(data))))
-            if s:=cache.get(data,0): return cache[ (n-s) % (r-s) + (s-1) ]
-            cache |= {data:r, r:beam_load(rotate_90(data))}
-    print('part 2:', powercycle(d,1_000_000_000))

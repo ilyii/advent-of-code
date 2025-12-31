@@ -1,6 +1,11 @@
 import argparse
 from functools import reduce
 import os
+import sys
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -38,17 +43,21 @@ if __name__ == "__main__":
     def hash(s): 
         return reduce(char, s, 0)
     
-    part_1 = sum(map(hash, data))
+    with profile(opt.submission) as results:
+        part_1 = sum(map(hash, data))
 
-    boxes = [dict() for _ in range(256)]
+        boxes = [dict() for _ in range(256)]
 
-    for step in data:
-        match step.strip('-').split('='):
-            case [l, f]: boxes[hash(l)][l] = int(f) # Assignment
-            case [l]:    boxes[hash(l)].pop(l, 0) # Removal
+        for step in data:
+            match step.strip('-').split('='):
+                case [l, f]: boxes[hash(l)][l] = int(f) # Assignment
+                case [l]:    boxes[hash(l)].pop(l, 0) # Removal
 
-    part_2 = sum(i*j*f for i,b in enumerate(boxes, 1)
-                    for j,f in enumerate(b.values(), 1))
+        part_2 = sum(i*j*f for i,b in enumerate(boxes, 1)
+                        for j,f in enumerate(b.values(), 1))
+        
+        results["part1"] = part_1
+        results["part2"] = part_2
     
     printr([part_1, part_2])
 

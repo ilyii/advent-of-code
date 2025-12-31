@@ -1,141 +1,151 @@
+#!/usr/bin/env python
+"""
+Simple setup script for Advent of Code.
+Creates a new day folder with template and fetches input.
+
+Usage:
+    python setup.py              # Today's puzzle
+    python setup.py -y 2024 -d 5 # Specific day
+"""
+import argparse
 import os
 import re
 import shutil
-import sys
-from argparse import ArgumentParser
 from datetime import datetime
+from pathlib import Path
 
-import markdownify
 import requests
-from colorama import Fore, Style, init
 from dotenv import load_dotenv
+from markdownify import markdownify
 
-init()
 load_dotenv()
-AOC_SESSION = os.getenv("AOC_SESSION")
 
-def printc(message, color=Fore.WHITE, style=Style.NORMAL):
-    print(f"{style}{color}{message}{Style.RESET_ALL}")
+REPO_ROOT = Path(__file__).parent
+TEMPLATE = REPO_ROOT / "template.py"
+AOC_URL = "https://adventofcode.com"
 
 
+class MissingSessionError(RuntimeError):
+    pass
 
-def fetch(directory, day, year):
-    url = f"https://adventofcode.com/{year}/day/{day}"
-    printc(f"URL for day {day}, year {year}: {url}", Fore.CYAN)
-    url += "/input"
-    headers = {"Cookie": f"session={AOC_SESSION}"}
-    response = requests.get(url, headers=headers)
-    input_file_path = os.path.join(directory, "input.txt")
-    example_input_file_path = os.path.join(directory, "example_input.txt")
 
-    ret_code = 0
-    if response.status_code == 200:
-        input_data = response.text.strip()
-        example_input_data = "Placeholder for example input..."
-        printc("Input data fetched successfully.", Fore.GREEN)
-    else:
-        printc(
-            f"Failed to fetch input data for Day {day}. Status Code: {response.status_code}",
-            Fore.RED,
+def get_session():
+    """Get AOC session token from .env"""
+    session = os.getenv("AOC_SESSION")
+    if not session:
+        raise MissingSessionError(
+            "AOC_SESSION not found in .env. Add AOC_SESSION=your_session_cookie"
         )
-        ret_code = response.status_code
-        input_data = ""
-        example_input_data = ""
-
-    with open(input_file_path, "w", encoding="utf-8") as input_file:
-        input_file.write(input_data)
-    with open(example_input_file_path, "w", encoding="utf-8") as example_input_file:
-        example_input_file.write(example_input_data)
-
-    return ret_code, input_file_path, example_input_file_path
+    return session
 
 
-def find_example_input(md_path, example_input_file_path):
-    assert os.path.exists(md_path), printc(f"Markdown file not found: {md_path}", Fore.RED)
-    assert os.path.exists(example_input_file_path), printc(f"Example input file not found: {example_input_file_path}", Fore.RED)
-
-    with open(md_path, "r") as md_file:
-        md_content = md_file.read()
-        code_blocks = re.findall(r"```(.*?)```", md_content, re.DOTALL)
-        if len(code_blocks) > 0:
-            example_input = code_blocks[0].strip()
-            with open(example_input_file_path, "w") as example_input_file:
-                example_input_file.write(example_input)
-            printc("Example input fetched from markdown file.", Fore.GREEN)
-        else:
-            printc("No code blocks found in markdown file. Skipping...", Fore.YELLOW)
+def fetch_input(year: int, day: int) -> str:
+    """Fetch puzzle input from AOC"""
+    url = f"{AOC_URL}/{year}/day/{day}/input"
+    response = requests.get(url, cookies={"session": get_session()}, timeout=10)
+    response.raise_for_status()
+    return response.text.strip()
 
 
-def get_description(day, year):
-    url = f"https://adventofcode.com/{year}/day/{day}"
-    headers = {"Cookie": f"session={AOC_SESSION}"}
-    response = requests.get(url, headers=headers)
+def fetch_description(year: int, day: int) -> str:
+    """Fetch puzzle description page (HTML)."""
+    url = f"{AOC_URL}/{year}/day/{day}"
+    response = requests.get(url, cookies={"session": get_session()}, timeout=10)
+    response.raise_for_status()
 
-    if response.status_code == 200:
-        description = response.text
-        description = description.split('<article class="day-desc">')[1]
-        description = description.split("</article>")[0]
-        description = description.replace("<p>", "").replace("</p>", "\n")
-    
-        return description
+    return response.text
+
+
+def extract_example(description: str) -> str:
+    """Try to extract example input from the description HTML."""
+    matches = re.findall(r"<pre><code>(.*?)</code></pre>", description, re.DOTALL)
+    for match in matches:
+        # Heuristic: example inputs usually have multiple lines or numbers
+        if "\n" in match or re.search(r"\d", match):
+            # Basic HTML unescape for common cases
+            text = (
+                match.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&amp;", "&")
+            )
+            return text.strip()
+    return "# Paste example input here"
+
+
+def setup_day(year: int, day: int, force: bool = False):
+    """Set up a new day folder"""
+    day_folder = REPO_ROOT / str(year) / f"{day:02d}-12"
+
+    day_folder.mkdir(parents=True, exist_ok=True)
+
+    if day_folder.exists() and not force:
+        print(f"Using existing folder: {day_folder}")
     else:
-        printc(
-            f"Failed to fetch description for Day {day}. Status Code: {response.status_code}",
-            Fore.RED,
-        )
-
-
-def get_args():
-    parser = ArgumentParser()
-    parser.add_argument( "-d", "--day", dest="day", type=int, default=datetime.now().day)
-    parser.add_argument("-y", "--year", dest="year",type=int, default=datetime.now().year)
-    return parser.parse_args()
-
-
-# -------- MAIN -------- #
-if __name__ == "__main__":
-    args = get_args()
-    assert 1 <= args.day <= 25, printc(f"--day must be between 1 and 25! (Got {args.day})", Fore.RED)
+        print(f"Created: {day_folder}")
     
-    # INITIALIZATION
-    printc(f"Creating files for {args.day}-12-{args.year}...", Fore.CYAN)
-    year_path = os.path.join(os.getcwd(), str(args.year))
-    day_path = os.path.join(year_path, f"{args.day:02d}-12")
-    os.makedirs(day_path, exist_ok=True)
-
-    # FETCH INPUT FROM adventofcode.com
-    ret_code, _, example_input_file_path = fetch(day_path, args.day, args.year)
-
-    # BUILD PY SCRIPT
-    template_path = os.path.join(os.path.dirname(__file__), "template.py")
-    script_path = os.path.join(day_path, "solution.py")
-
-    with open(template_path, "r", encoding="utf-8") as f:
-        template = f.read()
-
-    if not os.path.exists(script_path):
-        with open(script_path, "w+", encoding="utf-8") as f:
-            f.write(template)
-            printc("Template script created.", Fore.GREEN)
+    # Copy template
+    solution_file = day_folder / "solution.py"
+    if TEMPLATE.exists():
+        if force or not solution_file.exists():
+            shutil.copy(TEMPLATE, solution_file)
+            print("  -> solution.py (from template)")
     else:
-        printc("Template script already exists. Skipping...", Fore.YELLOW)
-
-    # BUILD DESCRIPTION
-    description = get_description(args.day, args.year)
+        print("  Warning: template.py not found")
+    
+    # Fetch description
     try:
-        descpath = os.path.join(os.getcwd(), str(args.year), f"{args.day:02d}-12", "description.md")
-        markdown_text = markdownify.markdownify(description)
-        with open(descpath, "w", encoding="utf-8") as f:
-            f.write(markdown_text)
-    except Exception as e:
-        printc(f"Failed to create the markdown description: {e}", Fore.RED)
-        printc("Saving the description as in raw format instead...", Fore.YELLOW)
-        with open(os.path.join(day_path, "description.txt"), "w", encoding="utf-8") as f:
-            f.write(description)
+        desc_path = day_folder / "description.md"
+        example_path = day_folder / "example_input.txt"
 
-    # FETCH EXAMPLE INPUT FROM MARKDOWN
-    find_example_input(descpath, example_input_file_path) 
-       
-    printc(f"Files created for {args.day}-12-{args.year}.", Fore.GREEN)
-    printc("Done.", Fore.CYAN)
+        if force or (not desc_path.exists()) or (not example_path.exists()):
+            print("  Fetching description...")
+            page_html = fetch_description(year, day)
+            match = re.search(
+                r'<article class="day-desc">(.*?)</article>',
+                page_html,
+                re.DOTALL,
+            )
+            article_html = match.group(1) if match else ""
+
+            if force or not desc_path.exists():
+                desc_md = markdownify(article_html, heading_style="ATX") if article_html else ""
+                desc_path.write_text(desc_md, encoding="utf-8")
+                print("  -> description.md")
+
+            if force or not example_path.exists():
+                example = extract_example(page_html)
+                example_path.write_text(example, encoding="utf-8")
+                print("  -> example_input.txt")
+    except Exception as e:
+        print(f"  Warning: Could not fetch description: {e}")
     
+    # Fetch input
+    try:
+        input_path = day_folder / "input.txt"
+        if force or not input_path.exists():
+            print("  Fetching input...")
+            input_data = fetch_input(year, day)
+            input_path.write_text(input_data, encoding="utf-8")
+            print("  -> input.txt")
+    except Exception as e:
+        print(f"  Warning: Could not fetch input: {e}")
+    
+    print(f"\nReady! cd {day_folder}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Set up Advent of Code day")
+    parser.add_argument("-y", "--year", type=int, default=datetime.now().year)
+    parser.add_argument("-d", "--day", type=int, default=datetime.now().day)
+    parser.add_argument("-f", "--force", action="store_true", help="Overwrite existing")
+    args = parser.parse_args()
+    
+    try:
+        setup_day(args.year, args.day, args.force)
+    except MissingSessionError as e:
+        print(f"Error: {e}")
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()

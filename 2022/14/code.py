@@ -1,10 +1,22 @@
-from time import perf_counter as pfc
+import argparse
+import os
+import sys
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
+
+
+def get_args():
+    """Argparse"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
+    return parser.parse_args()
 
 
 def read_file(file_path):
     with open(file_path, encoding="utf-8") as f:
         return f.read()
-
 
 
 def solve(inp):
@@ -60,11 +72,18 @@ def solve(inp):
 
     res1 = simulate_sand(True)
     res2 = simulate_sand(False)
-    return f"The solution of part 1 is {res1}.\n The solution of part 2 is {res2}."
+    return res1, res2
 
 
 if __name__ == "__main__":
-    start = pfc()
-    solution = solve(read_file("input.txt"))
-    print(f"Time elapsed: {pfc()-start}s")
-    print(solution)
+    opt = get_args()
+    inputpath = "input.txt" if opt.submission else "example_input.txt"
+    
+    with profile(opt.submission) as results:
+        result1, result2 = solve(read_file(inputpath))
+        results["part1"] = result1
+        results["part2"] = result2
+
+    print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
+    print(f"Part 1: {result1}")
+    print(f"Part 2: {result2}")

@@ -2,10 +2,15 @@ import argparse
 from collections import deque
 from itertools import cycle
 import os
+import sys
 from numbers import Number
 from typing import Any, Set, Tuple
 
 import numpy as np
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 
@@ -165,15 +170,14 @@ if __name__ == "__main__":
     movements = list("".join(char for char in movements if char in "<>^v"))
     
     data = [grid, movements]
+    
     # ---- SUBMISSION ---- #
-    result1, result2 = submission(data)
+    with profile(opt.submission) as results:
+        result1, result2 = submission(data)
+        results["part1"] = result1
+        results["part2"] = result2
 
     # ---- OUTPUT ---- #
     print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
     print(f"Part 1: {result1}")
     print(f"Part 2: {result2}")
-
-    if opt.submission:
-        import timeit
-        res = timeit.timeit(lambda: submission(data), number=10)
-        print(f"Time: {res/10:.7f}s")

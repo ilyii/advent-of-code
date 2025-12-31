@@ -1,5 +1,10 @@
 import argparse
 import os
+import sys
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -67,9 +72,14 @@ if __name__ == "__main__":
 
     start = -1+0j # left outside
     d = 1+0j # right
-    part_1 = process((start, d))
+    
+    with profile(opt.submission) as results:
+        part_1 = process((start, d))
 
-    part_2 = max(map(process, ((pos-d, d) for d in (1,1j,-1,-1j)
-                            for pos in G if pos-d not in G)))
+        part_2 = max(map(process, ((pos-d, d) for d in (1,1j,-1,-1j)
+                                for pos in G if pos-d not in G)))
+        
+        results["part1"] = part_1
+        results["part2"] = part_2
 
     printr([part_1, part_2])

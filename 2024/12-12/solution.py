@@ -1,7 +1,12 @@
 import os
+import sys
 import argparse
 import numpy as np
 from scipy.ndimage import label, convolve
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -32,13 +37,17 @@ def calculate_metrics(data):
     return total_perimeter, total_edges
 
 def main():
-    input_file = "input.txt" if get_args().submission else "example_input.txt"
+    opt = get_args()
+    input_file = "input.txt" if opt.submission else "example_input.txt"
     
     with open(input_file, "r") as file:
         data = np.array([list(line) for line in file.read().splitlines()])
     print(data)
 
-    result1, result2 = calculate_metrics(data)
+    with profile(opt.submission) as results:
+        result1, result2 = calculate_metrics(data)
+        results["part1"] = result1
+        results["part2"] = result2
 
     print(f"-----{os.path.basename(os.getcwd())}-----")
     print(f"Part 1: {result1}")

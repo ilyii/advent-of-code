@@ -1,4 +1,18 @@
+import argparse
+import os
+import sys
 import time
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
+
+
+def get_args():
+    """Argparse"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
+    return parser.parse_args()
 
 def hand2hex(hand):
     """
@@ -100,17 +114,17 @@ def calculate(data):
 
 
 if __name__ == "__main__":
-    with open("input.txt") as f:
+    opt = get_args()
+    inputpath = "input.txt" if opt.submission else "example_input.txt"
+    
+    with open(inputpath) as f:
         data = f.read().strip()
 
-    s1 = time.time()
-    answer_1 = calculate(data)[0]
-    s2 = time.time()
-    print(f"Answer 1: {answer_1}")
+    with profile(opt.submission) as results:
+        answer_1, answer_2 = calculate(data)
+        results["part1"] = answer_1
+        results["part2"] = answer_2
 
-    s3 = time.time()
-    answer_2 = calculate(data)[1]
-    s4 = time.time()
-    print(f"Answer 2: {answer_2}")    
-    
-    print(f'Times: {(s2-s1)*1000:.4f}ms, {(s4-s3)*1000:.4f}ms')
+    print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
+    print(f"Part 1: {answer_1}")
+    print(f"Part 2: {answer_2}")

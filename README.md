@@ -1,19 +1,58 @@
-# Advent of Code 🎁
+# Advent of Code
 
-![Static Badge](https://img.shields.io/badge/approved-blu?label=Santa%20)
-![Static Badge](https://img.shields.io/badge/running-green?label=Elf%20workshop%20)
-![Static Badge](https://img.shields.io/badge/in%20repair-orange?label=Snow%20Production%20Machine)
+My solutions for [Advent of Code](https://adventofcode.com/).
 
-Ho ho ho! 🎅🏻 
+## Setup
 
-## 🌟 Years
-#### [`2022`](2022/)
-#### [`2023`](2023/)
-#### [`2024`](2024/)
-## 🦌 Links
-<div>
-    <a href="https://www.adventofcode.com"><img src="https://img.shields.io/badge/Advent%20Of%20Code-8A2BE2?link=https%3A%2F%2Fadventofcode.com%2F" alt="Advent Of Code"></a>
+1. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-</div>
+2. Add your AOC session token to `.env`:
+```
+AOC_SESSION=your_session_cookie_here
+```
 
+## Usage
 
+### Create a new day
+```bash
+python setup.py              # Today's puzzle
+python setup.py -y 2024 -d 5 # Specific day
+```
+
+This creates `YEAR/DAY/` with:
+- `solution.py` - Template to write your solution
+- `input.txt` - Your puzzle input
+- `example_input.txt` - Example from description
+- `description.md` - Puzzle description
+
+### Run your solution
+```bash
+cd 2024/05-12
+python solution.py      # Run with example input
+python solution.py -s   # Run with real input (submission)
+```
+
+### View performance stats
+```bash
+python profiler.py -r   # Generate report
+python profiler.py -a   # Run all solutions + report
+```
+
+## Structure
+
+```
+advent-of-code/
+├── setup.py        # Create new day
+├── template.py     # Solution template
+├── profiler.py     # Performance tracking
+├── 2024/
+│   ├── 01-12/
+│   │   ├── solution.py
+│   │   ├── input.txt
+│   │   └── example_input.txt
+│   └── ...
+└── metrics.json    # Saved performance data
+```

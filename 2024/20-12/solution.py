@@ -1,8 +1,13 @@
 import argparse
 from itertools import combinations
 import os
+import sys
 
 import numpy as np
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
 
 
 def get_args():
@@ -53,12 +58,16 @@ if __name__ == "__main__":
 
     print(f"Initial path length: {dist[next(k for k,v in grid.items() if v == 'E')]}")
     
-    part_1 = part_2 = 0
+    with profile(opt.submission) as results:
+        part_1 = part_2 = 0
 
-    for (p,i), (q,j) in combinations(dist.items(), 2):
-        d = abs((p-q).real) + abs((p-q).imag)
-        if d == 2 and j-i-d >= 100: part_1 += 1
-        if d < 21 and j-i-d >= 100: part_2 += 1
+        for (p,i), (q,j) in combinations(dist.items(), 2):
+            d = abs((p-q).real) + abs((p-q).imag)
+            if d == 2 and j-i-d >= 100: part_1 += 1
+            if d < 21 and j-i-d >= 100: part_2 += 1
+        
+        results["part1"] = part_1
+        results["part2"] = part_2
 
     printr([part_1, part_2])
 

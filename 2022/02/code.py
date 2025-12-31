@@ -1,9 +1,21 @@
-from time import perf_counter as pfc
+import argparse
+import os
+import sys
+
+# Add repo root to path for profiler import
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from profiler import profile
+
+
+def get_args():
+    """Argparse"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--submission", action="store_true", help="Use real input for submission")
+    return parser.parse_args()
 
 
 def solution(inp):
     data = [e.replace("\n","").split(" ")for e in inp.readlines()]
-    print(data)
     # part 1
     # A 65 = Rock = X 88
     # B 66 = Paper = Y 89
@@ -20,7 +32,7 @@ def solution(inp):
         elif ord(my_choice) - ord(enemies_choice) in [22,25]:
             summation+=0
 
-    print(summation)
+    part1 = summation
     # part 2
     # A 65 = Rock
     # B 66 = Paper
@@ -42,11 +54,20 @@ def solution(inp):
             summation +=6
             summation += (ord(enemies_choice)+24)-87 if enemies_choice != "C" else (ord(enemies_choice)+21)-87
 
-    print(summation)
+    part2 = summation
+    return part1, part2
 
 
 if __name__ == "__main__":
-    start = pfc()
-    data = open("input.txt")
-    solution(data)
-    print(f"Time elapsed: {pfc()-start}s")
+    opt = get_args()
+    inputpath = "input.txt" if opt.submission else "example_input.txt"
+    
+    with profile(opt.submission) as results:
+        data = open(inputpath)
+        result1, result2 = solution(data)
+        results["part1"] = result1
+        results["part2"] = result2
+
+    print(f"-----{os.path.dirname(__file__).split(os.sep)[-1]}-----")
+    print(f"Part 1: {result1}")
+    print(f"Part 2: {result2}")
